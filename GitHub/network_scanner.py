@@ -13,7 +13,7 @@ def scan(ip):
     print(arp_broadcast_request.summary())
 
 
-scan("93.181.250.6/24")
+scan("")
 
 
 '''
@@ -50,6 +50,25 @@ print_result(scan_result)
 '''
 
 
+'''def scan(ip):
+    arp_req_frame = scapy.ARP(pdst=ip)
+
+    broadcast_ether_frame = scapy.Ether(dst="ff:ff:ff:ff:ff:ff")
+
+    broadcast_ether_arp_req_frame = broadcast_ether_frame / arp_req_frame
+
+    answered_list = scapy.srp(
+        broadcast_ether_arp_req_frame, timeout=1, verbose=False)[0]
+    result = []
+    for i in range(0, len(answered_list)):
+        client_dict = {
+            "ip": answered_list[i][1].psrc, "mac": answered_list[i][1].hwsrc}
+        result.append(client_dict)
+
+    return result
+'''
+
+
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-t', '--target', dest='target',
@@ -68,21 +87,24 @@ def get_args():
 
 def scan(ip):
     arp_req_frame = scapy.ARP(pdst=ip)
-
     broadcast_ether_frame = scapy.Ether(dst="ff:ff:ff:ff:ff:ff")
-
     broadcast_ether_arp_req_frame = broadcast_ether_frame / arp_req_frame
-
     answered_list = scapy.srp(
         broadcast_ether_arp_req_frame, timeout=1, verbose=False)[0]
     result = []
-    for i in range(0, len(answered_list)):
-        client_dict = {
-            "ip": answered_list[i][1].psrc, "mac": answered_list[i][1].hwsrc}
+    for i in answered_list:
+        client_dict = {"ip": i[1].psrc, "mac": i[1].hwsrc}
         result.append(client_dict)
 
     return result
 
 
+def print_result(result_list):
+    print("IP\t\t\tMAC Address\n----------------------------------")
+    for client in result_list:
+        print(client["IP"]+"\t\t"+client["mac"])
+
+
 options = get_args()
 scanned_output = scan(options.target)
+print_result(scanned_output)
